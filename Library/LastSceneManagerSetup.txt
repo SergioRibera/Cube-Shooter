@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Asset_Game/Escenas/Mapa.unity
+  isLoaded: 1
+  isActive: 1

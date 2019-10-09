@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: f4d64616e138f7a4a9beb43337af5a63
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: This July
+  fontNames:
+  - This July
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: bbc4b6ace2240c94995651efc0e842f2, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c780e5f9ff8c56409bdfb51d680fe5d, type: 3}
+  m_Name: Items Inventory
+  m_EditorClassIdentifier: 
+  items:
+  - id: 0
+    name: "Munici\xF3n"
+    craftable: 1
+    stats:
+      itemImage: {fileID: 0}
+      cantidad: 30
+      max_cantidad: 0
+    itemsRequired:
+    - idItem: 1
+      cantidad: 5
+    cant_craftado: 30
+  - id: 1
+    name: Metal
+    craftable: 0
+    stats:
+      itemImage: {fileID: 21300000, guid: 77921e7ceadb32d4ca70ea4e03a96630, type: 3}
+      cantidad: 25
+      max_cantidad: 200
+    itemsRequired: []
+    cant_craftado: 0
+  - id: 2
+    name: Madera
+    craftable: 0
+    stats:
+      itemImage: {fileID: 21300000, guid: 1aa6ad95ceca3784c853708d224043d7, type: 3}
+      cantidad: 21
+      max_cantidad: 200
+    itemsRequired: []
+    cant_craftado: 0
+  - id: 3
+    name: Contenedor Radioactivo
+    craftable: 0
+    stats:
+      itemImage: {fileID: 21300000, guid: 0acb42b50cf49bc41bb09f3360e0a743, type: 3}
+      cantidad: 19
+      max_cantidad: 0
+    itemsRequired: []
+    cant_craftado: 0
+  - id: 4
+    name: Escudo
+    craftable: 1
+    stats:
+      itemImage: {fileID: 0}
+      cantidad: 0
+      max_cantidad: 1
+    itemsRequired:
+    - idItem: 1
+      cantidad: 3
+    - idItem: 3
+      cantidad: 2
+    cant_craftado: 0
