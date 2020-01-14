@@ -3,14 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
+using LibraryPersonal;
+using Multiplayer.Networking.Utility.Attributes;
 
 public class DataManager : MonoBehaviour
 {
+    [GreyOut]
     public DataGame dataGame;
+
     public RemoteSettings remoteSettings;
 
     MenuManager menu;
-    public static DataManager singleton;
 
     string[] indexToDownload;
     float progress;
@@ -20,30 +23,21 @@ public class DataManager : MonoBehaviour
 
     private void Awake()
     {
-        if (singleton == null)
-        {
-            singleton = this;
-            dataGame.personajeDatos.daysTranscurrent++;
-        }
-        else if (singleton != this)
-        {
-            Destroy(gameObject);
-        }
-        StartCoroutine(Datos.ConfigRemoteSettings(this));
-        Datos.Init();
-        DontDestroyOnLoad(this);
+        ManagerDataPlayer.Init();
+        dataGame = ManagerDataPlayer.DataGame;
+        ManagerDataPlayer.DataGame.personajeDatos.daysTranscurrent++;
+        //StartCoroutine(Datos.ConfigRemoteSettings(this));
         menu = FindObjectOfType<MenuManager>();
-        if (Datos.Json.ExistePlayerData())
+        if (Datos.Exist(NameFiles.Data))
         {
-            dataGame = Datos.Json.Load<DataGame>(NameFiles.Data);
-            /*if (string.IsNullOrEmpty(dataGame.personajeDatos.nombre))
-                menu.ConfigureName();*/
-            StartCoroutine(CompareVersions());
+            if (string.IsNullOrEmpty(ManagerDataPlayer.GetNombre))
+                menu.ConfigureName();
+            //StartCoroutine(CompareVersions());
         }
         else
         {
-            //menu.ConfigureName();
-            StartCoroutine(DownloadPackages());
+            menu.ConfigureName();
+            //StartCoroutine(DownloadPackages());
         }
     }
     internal void Compare_Version()
@@ -57,9 +51,9 @@ public class DataManager : MonoBehaviour
         {
             if (remoteSettings.remoteDatas.Find(i => i.name == "Game_Version") != null)
             {
-                if (dataGame.game_Version < remoteSettings.GetInt("Game_Version"))
+                if (ManagerDataPlayer.DataGame.game_Version < remoteSettings.GetInt("Game_Version"))
                 {
-                    dataGame.game_Version = remoteSettings.GetInt("Game_Version");
+                    ManagerDataPlayer.DataGame.game_Version = remoteSettings.GetInt("Game_Version");
                     Application.OpenURL(remoteSettings.GetString("link_Download_Apk"));
                     SaveData();
                 }
@@ -68,9 +62,9 @@ public class DataManager : MonoBehaviour
             {
                 if (remoteSettings.GetBool("packages"))
                 {
-                    if (dataGame.packages_Version < int.Parse(remoteSettings.remoteDatas.Find(i => i.name == "Packages_Version").value))
+                    if (ManagerDataPlayer.DataGame.packages_Version < int.Parse(remoteSettings.remoteDatas.Find(i => i.name == "Packages_Version").value))
                     {
-                        dataGame.packages_Version = int.Parse(remoteSettings.remoteDatas.Find(i => i.name == "Packages_Version").value);
+                        ManagerDataPlayer.DataGame.packages_Version = int.Parse(remoteSettings.remoteDatas.Find(i => i.name == "Packages_Version").value);
                         StartCoroutine(DownloadPackages());
                         SaveData();
                     }
@@ -151,13 +145,12 @@ public class DataManager : MonoBehaviour
 
     public void ConfigurePrimerInicio()
     {
-        dataGame = new DataGame();
-        dataGame.personajeDatos.ultimoInicio = DateTime.Today.ToString("dd-mm-yy");
-        dataGame.personajeDatos.fechaInicio = DateTime.Today.ToString("dd-mm-yy");
+        ManagerDataPlayer.DataGame.personajeDatos.ultimoInicio = DateTime.Today.ToString("dd-mm-yy");
+        ManagerDataPlayer.DataGame.personajeDatos.fechaInicio = DateTime.Today.ToString("dd-mm-yy");
         SaveData();
     }
     public void SaveData()
     {
-        Datos.Json.Save(dataGame, NameFiles.Data);
+        ManagerDataPlayer.Save();
     }
 }

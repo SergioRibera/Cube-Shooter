@@ -73,35 +73,6 @@ public class Ruta
         }
     }
     /// <summary>
-    /// Crea un archivo Tomando la ruta, tomando en cuenta el nombre y formato del archivo a crear
-    /// </summary>
-    /// <param name="path">La ruta tomando en cuenta el nombre y formato del archivo a crear</param>
-    /// <param name="bytes">los bytes que deben de añadirse en el archivo</param>
-    public static void CreateFile(string path, byte[] bytes)
-    {
-        if (!File.Exists(path))
-        {
-            File.WriteAllBytes(path, bytes);
-            return;
-        }
-        return;
-    }
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="path">La Ruta De Los Archivos Locales</param>
-    /// <param name="format">El tipo de formatos que eliminará en la ruta especificada anteriormente</param>
-    public static void DeleteFile(string path, string format)
-    {
-        foreach (string p in Directory.GetFiles(path))
-        {
-            if (p.EndsWith(format))
-            {
-                File.Delete(p);
-            }
-        }
-    }
-    /// <summary>
     /// 
     /// </summary>
     /// <param name="folderName">nombre de la carpeta en la que se aloja el archivo</param>

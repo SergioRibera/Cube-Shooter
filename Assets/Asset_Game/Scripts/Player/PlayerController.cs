@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Multiplayer.Networking;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
+using LibraryPersonal;
 
 public class PlayerController : GameBehaviour
 {
@@ -16,7 +19,7 @@ public class PlayerController : GameBehaviour
     [SerializeField]
     VariableJoystick joystick;
     [SerializeField]
-    InputMovement movement;
+    InputMovement movement = new InputMovement();
     [SerializeField]
     Transform canonShoot;
     [SerializeField]
@@ -35,10 +38,12 @@ public class PlayerController : GameBehaviour
     [SerializeField] internal GameObject buttonCraft;
     [SerializeField] internal GameObject sugerencesToCraft;
     [SerializeField] internal GameObject detailsCraft;
-    
+
+    [SerializeField] Transform directionalCircle;
 
     [SerializeField] int vida = 100;
     [SerializeField] Image live_Grafic;
+    [SerializeField] internal Image live_GraficInCircle;
 
     Rigidbody rb;
     Animator anim;
@@ -47,18 +52,21 @@ public class PlayerController : GameBehaviour
     bool disparo;
     internal int coins;
 
+    NetworkIdentity ni;
 
     void Start()
     {
+        ni = GetComponentInParent<NetworkIdentity>();
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
-        movement.StartedConfig(anim, transform, canonShoot);
+        movement.StartedConfig(anim, transform, canonShoot, directionalCircle);
         Items it = databaseWeapons.FindItem(0);
         weapon.id = it.id;
         weapon.name = it.name;
         weapon.stats = it.stats;
         weapon.typeItem = it.typeItem;
         textMuni.text = weapon.stats.municion + " / " + weapon.stats.max_amount;
+        SetLife(vida);
     }
     void FixedUpdate()
     {
@@ -70,7 +78,6 @@ public class PlayerController : GameBehaviour
         if (weapon.stats.municion == 0 || movement.Reload)
             Reload();
     }
-
     
     public void Shoot()
     {
@@ -107,6 +114,14 @@ public class PlayerController : GameBehaviour
         vida = (vida > 0) ? vida -= d : 0;
         float amount = vida * .01f;
         live_Grafic.fillAmount = amount;
+        live_GraficInCircle.fillAmount = amount;
+    }
+    internal void SetLife(int l)
+    {
+        vida = (vida < 100) ? vida += l : 100;
+        float amount = vida * .01f;
+        live_Grafic.fillAmount = amount;
+        live_GraficInCircle.fillAmount = amount;
     }
     internal void UpdateMuniGrafics()
     {

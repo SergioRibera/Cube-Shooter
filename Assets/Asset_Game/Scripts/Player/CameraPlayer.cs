@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Multiplayer.Networking;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,11 +10,12 @@ public class CameraPlayer : MonoBehaviour
     [SerializeField]
     float smooth = 5f;
 
-    Vector3 offset;
+    [SerializeField] Vector3 offset = new Vector3(0, 6, -5);
 
     void Start()
     {
-        offset = transform.position - player.position;
+        if (transform.GetComponentInParent<NetworkIdentity>())
+            gameObject.SetActive(transform.GetComponentInParent<NetworkIdentity>().IsMe());
     }
 
     internal void MoveCam()

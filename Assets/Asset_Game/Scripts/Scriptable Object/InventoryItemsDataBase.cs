@@ -151,6 +151,75 @@ public class InventoryItems
             AddItem(newItem);
         }
     }
+    public void CraftItem(string nameItemToCraft, PlayerControllerNetwork player)
+    {
+        int craft = 0;
+        List<ItemsRequireForCrafting> itemsRequired = new List<ItemsRequireForCrafting>();
+        foreach (var item in player.itemsDataBase.FindItem(nameItemToCraft).itemsRequired)
+        {
+            if (FindItem(item.idItem).stats.cantidad >= item.cantidad)
+            {
+                craft++;
+                itemsRequired.Add(item);
+            }
+            else
+            {
+                player.ShowMesage("No Tienes Suficientes Materiales", Color.red);
+            }
+        }
+        if (craft == player.itemsDataBase.FindItem(nameItemToCraft).itemsRequired.Count)
+        {
+            foreach (var item in itemsRequired)
+            {
+                FindItem(item.idItem).stats.cantidad -= item.cantidad;
+                if (FindItem(item.idItem).stats.cantidad <= 0)
+                    FindItem(item.idItem).stats.cantidad = 0;
+                if (FindItem(item.idItem).stats.cantidad == 0)
+                {
+                    Debug.Log(FindItem(item.idItem).name + " Remove Item");
+                    player.RefreshDetailsCraftMenu(null);
+                    player.RefreshCraftSugerenceMenu(GetItemsCraftables(player.itemsDataBase));
+                }
+            }
+            ItemCollects newItem = player.itemsDataBase.FindItem(nameItemToCraft);
+            newItem.stats.cantidad = newItem.cant_craftado;
+            if (newItem.name == "Munición")
+            {
+                player.weapon.stats.max_amount += newItem.cant_craftado;
+            }
+            else
+                AddItem(newItem);
+        }
+    }
+    public void CraftItem(int idItemToCraft, PlayerControllerNetwork player)
+    {
+        int craft = 0;
+        List<ItemsRequireForCrafting> itemsRequired = new List<ItemsRequireForCrafting>();
+        foreach (var item in player.itemsDataBase.FindItem(idItemToCraft).itemsRequired)
+        {
+            if (FindItem(item.idItem).stats.cantidad >= item.cantidad)
+            {
+                craft++;
+                itemsRequired.Add(item);
+            }
+        }
+        if (craft == player.itemsDataBase.FindItem(idItemToCraft).itemsRequired.Count)
+        {
+            foreach (var item in itemsRequired)
+            {
+                FindItem(item.idItem).stats.cantidad -= item.cantidad;
+                if (FindItem(item.idItem).stats.cantidad <= 0)
+                    FindItem(item.idItem).stats.cantidad = 0;
+                if (FindItem(item.idItem).stats.cantidad == 0)
+                {
+                    Debug.Log(FindItem(item.idItem).name + " Remove Item");
+                }
+            }
+            ItemCollects newItem = player.itemsDataBase.FindItem(idItemToCraft);
+            newItem.stats.cantidad = newItem.cant_craftado;
+            AddItem(newItem);
+        }
+    }
 }
 [System.Serializable]
 public class ItemCollects
