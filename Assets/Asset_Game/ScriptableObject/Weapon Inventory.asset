@@ -19,7 +19,7 @@ MonoBehaviour:
     stats:
       imgWeapon: {fileID: 0}
       weaponPref: {fileID: 0}
-      proyectilPref: {fileID: 3996323170495933967, guid: aa5ad75d74cf8d24d901a79be972f435,
+      proyectilPref: {fileID: 3089386031458598810, guid: d89f01231ad4387428d6810eea0ff621,
         type: 3}
       proyectilVelocity: 2.2
       municion: 30

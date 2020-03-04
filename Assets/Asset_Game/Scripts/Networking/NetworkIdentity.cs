@@ -53,8 +53,11 @@ namespace Multiplayer.Networking
             }
             if (myMaterial != null) myMaterial.color = c;
         }
-
-
+        public Player player;
+        public void SetPlayer(Player p)
+        {
+            player = p;
+        }
         public void SetSocketReference(SocketIOComponent Socket) => socket = Socket;
 
         public string GetID() { 

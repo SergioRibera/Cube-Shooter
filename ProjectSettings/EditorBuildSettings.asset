@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Asset_Game/Escenas/Mapa.unity
+    path: Assets/Asset_Game/Escenas/Main Menu.unity
+    guid: d82fdd31752855a4489e4a78a3486576
+  - enabled: 1
+    path: Assets/Asset_Game/Escenas/Mapa_Playa.unity
+    guid: 27b7e6674bd06984ba9b812c71e0b09d
+  - enabled: 1
+    path: Assets/Asset_Game/Escenas/Mapa_Carretera.unity
     guid: 1356d32111b4059488cf56077962bc6c
   m_configObjects: {}

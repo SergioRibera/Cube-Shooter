@@ -20,7 +20,7 @@ public class Explosion : MonoBehaviour
             }
             if (e.CompareTag("Player"))
             {
-                e.GetComponent<PlayerController>().TakeDamage(20);
+                e.GetComponent<PlayerControllerNetwork>().TakeDamage(20);
             }
         }
     }

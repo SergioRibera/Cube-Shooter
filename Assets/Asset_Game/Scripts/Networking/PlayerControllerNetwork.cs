@@ -63,7 +63,7 @@ public class PlayerControllerNetwork : MonoBehaviour
     GeneralInputs inputPc;
 
 
-    Player player = new Player();
+    internal Player player = new Player();
     Color myColor;
     Vector3 oldPosition;
     public void SetPlayer(Player p)

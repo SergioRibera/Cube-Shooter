@@ -5,11 +5,15 @@ using SocketIO;
 using System;
 using LibraryPersonal;
 using System.Globalization;
+using Multiplayer.Networking.Utility.Attributes;
+using UnityEngine.SceneManagement;
 
 namespace Multiplayer.Networking
 {
-    public delegate void EventNetwork(JSONObject data);
+    public delegate void EventNetwork(JSONObject data, Player p);
     public class NetworkClient : SocketIOComponent {
+
+        public const float SERVER_UPDATE_TIME = 10;
 
         [Header("NetwokClient")]
         [SerializeField]
@@ -24,13 +28,21 @@ namespace Multiplayer.Networking
         public static string LobbyID { get; private set; }
 
         [SerializeField]
+        [GreyOut]
         public Dictionary<string, PlayerNetworkClases> serverObjects;
+
+        internal SettingsLobby settingsLobby;
+        public Dictionary<string, Player> Players;
 
         public override void Start()
         {
             base.Start();
             Initialize();
             SetupEvents();
+            SetupLobbyEvents();
+            Application.quitting += () => {
+                Emit("disconnect");
+            };
         }
         public override void Update()
         {
@@ -39,6 +51,7 @@ namespace Multiplayer.Networking
         void Initialize()
         {
             serverObjects = new Dictionary<string, PlayerNetworkClases>();
+            Players = new Dictionary<string, Player>();
         }
         private void SetupEvents()
         {
@@ -63,32 +76,41 @@ namespace Multiplayer.Networking
                 print("Player Registered");
             });
             On("spawn", (E) => {
-                string id = E.data["id"].ToString().RemoveQuotes();
+                foreach (var player in E.data["players"].list)
+                {
+                    string id = player["id"].ToString().RemoveQuotes();
+                    string idL = player["lobby"].ToString().RemoveQuotes();
 
-                float x = float.Parse(E.data["position"]["x"].str, CultureInfo.InvariantCulture);
-                float y = float.Parse(E.data["position"]["y"].str, CultureInfo.InvariantCulture);
-                float z = float.Parse(E.data["position"]["z"].str, CultureInfo.InvariantCulture);
+                    if (idL == LobbyID)
+                    {
 
-                Player p = new Player();
-                p.username = E.data["username"].str;
-                p.Life = 100;
-                p.indexPlayerMesh = (int) E.data["indexPlayerMesh"].f;
-                p.playerColor = E.data["playerColor"].str;
-                p.id = id;
+                        float x = float.Parse(player["position"]["x"].str, CultureInfo.InvariantCulture);
+                        float y = float.Parse(player["position"]["y"].str, CultureInfo.InvariantCulture);
+                        float z = float.Parse(player["position"]["z"].str, CultureInfo.InvariantCulture);
 
-                GameObject go = Instantiate(playerPrefab[0], networkContainer);
-                go.name = string.Format("Player ({0})", id);
-                go.transform.position = new Vector3(x, y, z);
+                        Player p = new Player();
+                        p.username = player["username"].str;
+                        p.Life = 100;
+                        p.indexPlayerMesh = (int) player["indexPlayerMesh"].f;
+                        p.playerColor = player["playerColor"].str;
+                        p.id = id;
 
-                PlayerNetworkClases networkClases = new PlayerNetworkClases();
-                networkClases.ni = go.GetComponent<NetworkIdentity>();
-                networkClases.pn = go.transform.Find("VisiblePeronaje").GetComponent<PlayerControllerNetwork>();
+                        GameObject go = Instantiate(playerPrefab[0], networkContainer);
+                        go.name = string.Format("Player ({0})", id);
+                        go.transform.position = new Vector3(x, y, z);
 
-                networkClases.pn.SetPlayer(p);
-                networkClases.ni.SetControllerID(id, p.username);
-                networkClases.ni.SetSocketReference(this);
-                serverObjects.Add(id, networkClases);
-                print("Player  " + E.data["username"].str + "  spawned");
+                        PlayerNetworkClases networkClases = new PlayerNetworkClases();
+                        networkClases.ni = go.GetComponent<NetworkIdentity>();
+                        networkClases.pn = go.transform.Find("VisiblePeronaje").GetComponent<PlayerControllerNetwork>();
+
+                        networkClases.pn.SetPlayer(p);
+                        networkClases.ni.SetControllerID(id, p.username);
+                        networkClases.ni.SetSocketReference(this);
+                        networkClases.ni.SetPlayer(p);
+                        serverObjects.Add(id, networkClases);
+                        print("Player  " + player["username"].str + "  spawned");
+                    }
+                }
             });
 
             On("updatePosition", (E) => {
@@ -139,13 +161,91 @@ namespace Multiplayer.Networking
                 serverObjects.Remove(id);
                 print("Connection is Broken!!!");
             });
+        }
+        void SetupLobbyEvents()
+        {
             On("JoinGameLobby", (E) => {
-                print("Player Connected");
-                JoinLobby?.Invoke(E.data);
-                print("Player Connected");
+                LobbyManager.singletone.indexPlayers = 0;
+                print(E.data["players"].list.Count);
+                foreach (var player in E.data["players"].list)
+                {
+                    string id = player["id"].ToString().RemoveQuotes();
+                    Player p = new Player();
+                    p.username = player["username"].str;
+                    p.Life = 100;
+                    p.indexPlayerMesh = (int)player["indexPlayerMesh"].f;
+                    p.playerColor = player["playerColor"].str;
+                    p.id = id;
+
+                    Players.Add(id, p);
+
+                    LobbyID = E.data["idLobby"].str;
+                    JoinLobby?.Invoke(E.data, p);
+                    print("Player Connected");
+                }
+            });
+            On("ChangeSettingsLobby", (E) => {
+                int mapa = (int) E.data["gameMapa"].f;
+                int mode = (int) E.data["gameMode"].f;
+                settingsLobby.gameMapa = (GameMapa)Enum.ToObject(typeof(GameMapa), mapa);
+                settingsLobby.gameMode = (GameMode)Enum.ToObject(typeof(GameMode), mode);
+                LobbyManager.singletone.ChangedSettingsLobbyVisual();
+            });
+            On("PlayerReady", (E) => {
+                string id = E.data["IdPlayer"].ToString().RemoveQuotes();
+                bool ready = E.data["Ready"].b;
+
+                serverObjects[id].ni.player.ready = ready;
+                LobbyManager.singletone.UpdateReadys();
+            });
+            On("LeftGameLobby", (E) => {
+                LobbyManager.singletone.indexPlayers = 0;
+                string id = E.data["playerId"].ToString().RemoveQuotes();
+                if (serverObjects.ContainsKey(id))
+                {
+                    GameObject go = serverObjects[id].ni.gameObject;
+                    print("Connection is Broken!!!   2");
+                    Destroy(go);
+                    print("Connection is Broken!!!   3");
+                    serverObjects.Remove(id);
+                    Players.Remove(id);
+                    print("Connection is Broken!!!");
+                }
             });
         }
-
+        public void Ready(string id, bool r)
+        {
+            Emit("PlayerReady", new JSONObject("{ id:" + id + ", ready:" + r + "}"));
+        }
+        public void PlayGame(int i)
+        {
+            bool allReady = false;
+            foreach(var p in Players.Values)
+            {
+                if (!p.ready)
+                    break;
+                allReady = true;
+            }
+            if (allReady)
+            {
+                SceneManager.LoadScene(i);
+                SceneManager.sceneLoaded += (s, m) => {
+                    if (s.isLoaded)
+                    {
+                        Emit("PlayGame");
+                    }
+                };
+            }
+        }
+        public void JoinInvitedLobby(int id)
+        {
+            Player p = serverObjects[ClientID].ni.player;
+            Emit("JoinGame", new JSONObject(JsonUtility.ToJson(new JoinLobbyData(p, true, id, GameMode.Cooperativo, GameMapa.Playa))));
+        }
+        public void ChangeSettingsLobby()
+        {
+            Emit("LobbySettingsChanged", new JSONObject(JsonUtility.ToJson(settingsLobby)));
+        }
     }
 
     [Serializable]
@@ -166,8 +266,16 @@ namespace Multiplayer.Networking
             this.gameMapa = gameMapa;
         }
     }
-    public enum GameMode { Cooperativo = 1, FreeForAll = 2 }
-    public enum GameMapa { Carretera = 1, Playa = 2 }
+    [Serializable]
+    public class SettingsLobby
+    {
+        public GameMode gameMode;
+        public GameMapa gameMapa;
+        public string[] playersId;
+        public bool playersWaiting;
+    }
+    public enum GameMode { Cooperativo = 0, FreeForAll = 1 }
+    public enum GameMapa { Carretera = 0, Playa = 1 }
 
     [Serializable]
     public class PlayerNetworkClases
@@ -181,6 +289,7 @@ namespace Multiplayer.Networking
         public string username;
         public int Life;
         public int lobby = 0;
+        public bool ready = false;
         public string playerColor;
         public string id;
         public int indexPlayerMesh = 0;

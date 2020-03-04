@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Enemy
   - Explodes
+  - Text_Rounds
+  - loadingScreen
   layers:
   - Default
   - TransparentFX
@@ -19,7 +21,7 @@ TagManager:
   - 
   - Player
   - Obstacles
-  - 
+  - Terrain
   - 
   - 
   - 
